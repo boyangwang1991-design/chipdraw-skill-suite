@@ -1,0 +1,10 @@
+{
+  "signal": [
+    { "name": "clk", "wave": "p.PpPPPPp.P." },
+    { "name": "dat ->", "wave": "x.3..4.5...6", "data": "D1 D2 D3",
+      "over": "0.1..1.1...1", "under": "0...1010..10" },
+    {},
+    { "name": "FF", "wave": "x....3.4...5", "data": "D1 D2 D3" }
+  ],
+  "head": { "tick": 1 }
+}

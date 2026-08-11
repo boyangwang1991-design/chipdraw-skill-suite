@@ -1,0 +1,14 @@
+{
+  "signal": [
+    { "name": "clock", "wave": "p................" },
+    { "name": "hwrite", "wave": "x1x.1x..1.x.1.x.." },
+    { "name": "htrans", "wave": "x3x.4x..5.x.6.x..", "data": "2 2 2 2" },
+    { "name": "haddr", "wave": "x3x.4x..5.x.6.x..", "data": "A0 A1 A2 A3" },
+    { "name": "hwdata", "wave": "x.3x.4.x..5x..6.x", "data": "D0 D1 D2 D3" },
+    {},
+    { "name": "hready", "wave": "x1.x101x01.x0101x" }
+  ],
+  "head": { "tock": 1 },
+  "gaps": "(.. |. s. | s.. | s. s. )",
+  "foot": { "text": "writes" }
+}

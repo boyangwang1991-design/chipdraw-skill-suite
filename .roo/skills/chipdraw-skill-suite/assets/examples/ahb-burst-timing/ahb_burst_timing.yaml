@@ -1,0 +1,47 @@
+# AHB 突发读写事务时序（演示 WaveDrom 高级能力：gaps / over-under / 流式背压）
+# 事实源：AMBA AHB-Lite Protocol。
+# 覆盖：INCR 突发、等待态（HREADY 拉低）、写数据打拍、读数据返回。
+schema_version: "1.0"
+
+diagram:
+  id: ahb-burst-transaction
+  type: rtl_behavior
+  subtype: timing
+  title: AHB-Lite Burst Read/Write Transaction
+  abstraction: rtl_behavior
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: specs/ahb_lite_protocol.md, role: protocol}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+
+behavior:
+  clock:
+    name: HCLK
+    period: 10ns
+  signals:
+    - {name: HTRANS, wave: "x3x.4x..5x.6x..", data: ["2", "2", "2", "2"], required: true}
+    - {name: HWRITE, wave: "x0x.0x..1x.1x.."}
+    - {name: HADDR,  wave: "x3x.4x..5x.6x..", data: ["A0", "A1", "A2", "A3"]}
+    - {name: HWDATA, wave: "x.3x.4.x..5x..6.x", data: ["D0", "D1", "D2", "D3"]}
+    - {}
+    - {name: HREADY, wave: "x1.x101x01.x0101x"}
+    - {name: HRDATA, wave: "x.3x..4x..5x...6x", data: ["D0", "D1", "D2", "D3"],
+       over: "0...1..1.1...1", under: "0...1010..10"}
+  head:
+    text: "AHB-Lite Burst（INCR4，含等待态与建立/保持窗口）"
+    tock: 1
+  gaps: "(.. 1. s. 1 s.. 1 s. s. )"
+  foot:
+    text: "协议来源：AMBA AHB-Lite Protocol"
+  origin: spec
+  protocol_rules: |
+    AHB 单相时钟握手：地址相位（HTRANS/HADDR/HWRITE）+ 数据相位（HWDATA/HRDATA）。
+    HREADY 拉低插入等待态（burst 延长）；建立/保持窗口用 over/under 标注。
+    参考示例：assets/libraries/wavedrom-examples/examples/ahb-wait-states.json

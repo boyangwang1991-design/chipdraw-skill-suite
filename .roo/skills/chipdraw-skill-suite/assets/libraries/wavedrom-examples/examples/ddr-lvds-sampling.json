@@ -1,0 +1,13 @@
+{
+  "signal": [
+    { "name": "clock", "wave": "P.................", "period": 2 },
+    { "name": "rx_dat_ddr", "wave": "x103434343434343x015656565656565x77",
+      "data": "i13 i12 i11 i10 i9 i8 i7 i6 i5 i4 i3 i2 i1 q13 q12 q11 q10 q9 q8 q7 q6 q5 q4 q3 q2 q1 a b",
+      "phase": -0.3 },
+    { "name": "rx_dat[0]", "wave": "x.13333333055555557",
+      "data": "i13 i11 i9 i7 i5 i3 i1 q13 q11 q9 q7 q5 q3 q1 a", "period": 2 },
+    { "name": "rx_dat[1]", "wave": "x.0444444x1666666x7",
+      "data": "i12 i10 i8 i6 i4 i2 q12 q10 q8 q6 q4 q2 b", "period": 2 }
+  ],
+  "head": { "tick": 1 }
+}

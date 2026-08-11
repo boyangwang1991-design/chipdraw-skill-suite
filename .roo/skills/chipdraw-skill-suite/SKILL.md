@@ -109,7 +109,7 @@ chipdraw-skill-suite/
 ├── chipdiagram/                # 核心 Python 包（引擎/适配器/校验器/CLI）
 ├── assets/                     # 资产层（不直接触发）
 │   ├── schemas/                # 8 个 JSON Schema
-│   ├── libraries/              # 主题与符号库
+│   ├── libraries/              # 主题与符号库、wavedrom-examples 官方示例
 │   └── examples/               # Golden Case
 ├── tests/                      # 单元/黄金/集成/视觉测试
 ├── pyproject.toml              # 工程配置
@@ -127,6 +127,7 @@ chipdraw-skill-suite/
 | `diagram-routing.md` | 需要详细路由决策或边界情况时 |
 | `openai.yaml` | 需要与 OpenAI-compatible agent 集成时 |
 | `<sub-skill>/SKILL.md` | 已路由到对应专业子 Skill 时 |
+| `assets/libraries/wavedrom-examples/` | 需要 WaveDrom 数字时序建模参考（官方能力清单、wave 字符、分组/箭头/period/phase/head-foot 示例）时 |
 
 ## Prerequisites
 

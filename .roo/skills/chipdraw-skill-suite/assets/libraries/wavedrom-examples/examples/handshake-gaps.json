@@ -1,0 +1,7 @@
+{
+  "signal": [
+    { "name": "clock", "wave": "p......" },
+    { "name": "valid", "wave": "0101010" },
+    { "name": "data", "wave": "x3x4x5x", "data": "d0 d1 d2" }
+  ]
+}

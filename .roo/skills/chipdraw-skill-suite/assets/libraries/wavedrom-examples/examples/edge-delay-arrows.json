@@ -1,0 +1,8 @@
+{
+  "signal": [
+    { "name": "enable", "wave": "0...1...0...", "node": "....a...b" },
+    { "node": "....A...B" }
+  ],
+  "edge": ["a-A", "A<->B 100 ms delay", "B-b"],
+  "config": { "arcFontSize": 18 }
+}

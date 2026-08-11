@@ -1,0 +1,15 @@
+{
+  "signal": [
+    { "name": "clock", "wave": "P..................." },
+    { "name": "rx_dat_ddr", "wave": "x",
+      "data": "~i13 ~i12 ~i11 ~i10 ~i9 i8 i7 i6 i5 i4 i3 i2 i1 q13 q12 q11 q10 q9 q8 q7 q6 q5 q4 q3 q2 q1 a",
+      "phase": -0.3 },
+    { "name": "state", "wave": "=..=================",
+      "data": "idle i13 i11 i9 i7 i5 i3 i1 iq q13 q11 q9 q7 q5 q3 q1 ret idle" },
+    { "name": "rx_dat[0]", "wave": "1.04444444155555551",
+      "data": "~i13 ~i11 ~i9 ~i7 ~i5 ~i3 ~i1 ~q13 ~q11 ~q9 ~q7 ~q5 ~q3 ~q1" },
+    { "name": "rx_dat[1]", "wave": "1..333333105555551.",
+      "data": "~i12 ~i10 ~i8 ~i6 ~i4 ~i2 ~q12 ~q10 ~q8 ~q6 ~q4 ~q2" }
+  ],
+  "head": { "tick": 1 }
+}

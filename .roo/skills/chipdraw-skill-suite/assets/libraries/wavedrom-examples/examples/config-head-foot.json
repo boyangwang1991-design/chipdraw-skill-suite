@@ -1,0 +1,16 @@
+{
+  "signal": [
+    { "name": "clk", "wave": "p...." },
+    { "name": "Data", "wave": "x345x", "data": ["head", "body", "tail"] },
+    { "name": "Request", "wave": "01..0" }
+  ],
+  "config": { "hscale": 1 },
+  "head": {
+    "text": "WaveDrom example",
+    "tick": 0
+  },
+  "foot": {
+    "text": "Figure 100",
+    "tock": 9
+  }
+}

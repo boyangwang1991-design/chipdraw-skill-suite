@@ -1,0 +1,11 @@
+{
+  "signal": [
+    { "name": "clock", "wave": "p......." },
+    { "name": "data ->", "wave": "=334.455", "data": ". a0 a1 b0 b1 c0 c1" },
+    { "name": "last ->", "wave": "0.10.101" },
+    { "name": "valid ->", "wave": "01......" },
+    { "name": "ready (cpu)", "wave": "1..01..." },
+    {},
+    { "name": "cpu data", "wave": "=.334x455", "data": ". a0 a1 b0 b1 c0 c1" }
+  ]
+}

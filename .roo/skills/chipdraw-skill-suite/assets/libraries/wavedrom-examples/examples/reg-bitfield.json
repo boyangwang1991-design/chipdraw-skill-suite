@@ -1,0 +1,10 @@
+{
+  "reg": [
+    { "name": "IPO", "bits": 8 },
+    { "bits": 7 },
+    { "name": "BRK", "bits": 5, "type": 4 },
+    { "name": "CPK", "bits": 1 },
+    { "name": "Clear", "bits": 3, "type": 5 },
+    { "bits": 8 }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "signal": [
+    { "name": "ACLK", "wave": "p....." },
+    { "name": "AWADDR", "wave": "x3x4.x", "data": "A0 A1" },
+    { "name": "AWVALID", "wave": "0101.0" },
+    { "name": "AWREADY", "wave": "x1x01x" }
+  ],
+  "gaps": "1.1s.1"
+}
