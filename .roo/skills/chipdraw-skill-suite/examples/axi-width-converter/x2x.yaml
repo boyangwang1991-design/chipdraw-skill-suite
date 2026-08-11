@@ -1,0 +1,76 @@
+# AXI Width/Clock Converter IP（建设方案 §11.2 Case 2）
+# 覆盖 32~1024 bit 参数化位宽、异步时钟、FIFO、Channel、Burst、Outstanding、Backpressure。
+schema_version: "1.0"
+
+diagram:
+  id: axi-width-converter
+  type: ip_architecture
+  title: AXI Width/Clock Converter
+  abstraction: ip
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: rtl/axi_x2x.sv, role: rtl}
+    - {path: specs/axi_x2x_hld.md, role: specification}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+  colorblind_safe: true
+
+layout:
+  direction: left_to_right
+  detail_level: microarchitecture
+  max_visible_blocks: 20
+
+traceability:
+  design_version: "1.0.0"
+
+ip:
+  modules:
+    - {id: width_converter, name: Width Converter 1024→32, kind: converter}
+    - {id: write_channel, name: Write Channel, kind: datapath}
+    - {id: read_channel, name: Read Channel, kind: datapath}
+    - {id: axi_slave, name: AXI Slave Port, kind: other}
+    - {id: axi_master, name: AXI Master Port, kind: other}
+
+  ports:
+    - {id: s_aw, name: s_aw, direction: input, width: 1024, kind: interface, protocol: AXI}
+    - {id: m_aw, name: m_aw, direction: output, width: 32, kind: interface, protocol: AXI}
+
+  interfaces:
+    - {id: slave_axi, name: Slave AXI, protocol: AXI, data_width: 1024, owner: axi_slave}
+    - {id: master_axi, name: Master AXI, protocol: AXI, data_width: 32, owner: axi_master}
+
+  datapaths:
+    - {id: dp_aw, from: axi_slave, to: aw_fifo, width: 1024}
+    - {id: dp_w, from: axi_slave, to: w_fifo, width: 1024}
+    - {id: dp_wc_in, from: w_fifo, to: width_converter, width: 1024}
+    - {id: dp_wc_out, from: width_converter, to: write_channel, width: 32, through_converter: width_converter}
+    - {id: dp_wc_out_m, from: write_channel, to: axi_master, width: 32}
+    - {id: dp_r, from: axi_master, to: r_fifo, width: 32}
+    - {id: dp_r_out, from: r_fifo, to: axi_slave, width: 32}
+
+  pipelines:
+    - {id: pipe_w, name: Write Pipeline, stages: [{index: 0, name: aw, latency: 1}, {index: 1, name: convert, latency: 4}, {index: 2, name: write, latency: 1}], valid_ready: true}
+
+  buffers:
+    - {id: aw_fifo, name: AW FIFO, depth: 8, width: 1024, kind: fifo, async: true, write_clock_domain: clk_a, read_clock_domain: clk_b}
+    - {id: w_fifo, name: W FIFO, depth: 8, width: 1024, kind: fifo, async: true, write_clock_domain: clk_a, read_clock_domain: clk_b}
+    - {id: b_fifo, name: B FIFO, depth: 8, width: 32, kind: fifo, async: true, write_clock_domain: clk_b, read_clock_domain: clk_a}
+    - {id: ar_fifo, name: AR FIFO, depth: 8, width: 32, kind: fifo, async: true, write_clock_domain: clk_a, read_clock_domain: clk_b}
+    - {id: r_fifo, name: R FIFO, depth: 8, width: 32, kind: fifo, async: true, write_clock_domain: clk_b, read_clock_domain: clk_a}
+
+  cdc_paths:
+    - {id: cdc_aw, from_domain: clk_a, to_domain: clk_b, mechanism: async_fifo}
+    - {id: cdc_w, from_domain: clk_a, to_domain: clk_b, mechanism: async_fifo}
+    - {id: cdc_b, from_domain: clk_b, to_domain: clk_a, mechanism: async_fifo}
+
+  rdc_paths:
+    - {id: rdc_w, from_domain: rst_a, to_domain: rst_b, mechanism: reset_sync}
+
+  safety_mechanisms:
+    - {id: ecc_w, name: W Channel ECC, kind: ecc, monitors: [w_fifo], fault_response: assert_intr, reporting_path: error_reg}

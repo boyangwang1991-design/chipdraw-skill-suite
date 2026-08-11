@@ -1,0 +1,54 @@
+# ---------- 上游只读参考（不入库，保持为子模块/快照） ----------
+/reference
+
+# ---------- .roo/skills 下仅保留 chipdraw 与 skill-creator，其余忽略 ----------
+.roo/skills/*
+!.roo/skills/chipdraw-skill-suite/
+!.roo/skills/skill-creator/
+
+# ---------- Python / uv ----------
+# 虚拟环境（套件内 uv venv）
+.venv/
+venv/
+env/
+
+# 构建与元数据
+*.egg-info/
+build/
+dist/
+
+# 字节码与缓存
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---------- Node / npm ----------
+node_modules/
+*.tgz
+
+# ---------- 套件生成产物（含 .roo/skills/chipdraw-skill-suite/ 下） ----------
+# 构建输出（diagram 生成、校验报告、manifest 等）
+.roo/skills/chipdraw-skill-suite/build/
+# 虚拟环境与锁文件（套件内为可重建环境）
+.roo/skills/chipdraw-skill-suite/.venv/
+.roo/skills/chipdraw-skill-suite/uv.lock
+.roo/skills/chipdraw-skill-suite/chipdiagram.egg-info/
+
+# ---------- 编辑器 / OS ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ---------- 日志 / 临时 ----------
+*.log
+tmp/
+temp/

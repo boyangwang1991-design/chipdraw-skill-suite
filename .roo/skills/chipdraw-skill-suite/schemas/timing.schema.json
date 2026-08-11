@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/timing.schema.json",
+  "title": "数字时序（WaveDrom）专业模型",
+  "description": "逐周期数字时序权威渲染。定义见 fsm.schema.json 的 definitions.timing（行为节点共用）。",
+  "$ref": "fsm.schema.json#/definitions/timing"
+}

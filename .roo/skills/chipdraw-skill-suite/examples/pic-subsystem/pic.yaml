@@ -1,0 +1,155 @@
+# PIC Subsystem 一份 SSOT（建设方案 §11.2 Case 1 / §17 试点）
+# 由同一 SSOT 生成 SoC Overview、Interrupt Network、Clock/Reset、Safety View 等多视图。
+schema_version: "1.0"
+
+diagram:
+  id: pic-subsystem
+  type: soc_architecture
+  title: Platform Interrupt Controller Subsystem
+  abstraction: soc
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: specs/pic_hld.md, role: specification}
+    - {path: integration/pic.yaml, role: ssot}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+  colorblind_safe: true
+
+layout:
+  direction: left_to_right
+  detail_level: architecture
+  max_visible_blocks: 20
+
+outputs:
+  editable: [drawio]
+  rendered: [svg, png, pdf]
+  reports: [validation, manifest]
+
+traceability:
+  requirement_ids: [PIC-LRS-001, PIC-HLD-012]
+  design_version: "1.0.0"
+
+soc:
+  instances:
+    - id: cpu_cluster
+      name: CPU Cluster
+      kind: subsystem
+      clock_domain: cpu_clk
+      reset_domain: cpu_rst
+      power_domain: pd_core
+      safety_domain: safe_normal
+      security_domain: secure
+    - id: dsp_subsystem
+      name: DSP Subsystem
+      kind: subsystem
+      clock_domain: dsp_clk
+      reset_domain: dsp_rst
+      power_domain: pd_dsp
+      safety_domain: safe_normal
+      security_domain: secure
+    - id: pic
+      name: Platform Interrupt Controller
+      kind: controller
+      clock_domain: periph_clk
+      reset_domain: periph_rst
+      power_domain: pd_periph
+      safety_domain: safe_normal
+      security_domain: secure
+      ports:
+        - {id: pic_irq_in, name: irq_in, direction: input, width: 64, mandatory: true}
+        - {id: pic_apb, name: apb_cfg, direction: input, width: 32, protocol: APB, mandatory: true}
+        - {id: pic_to_clic, name: to_clic, direction: output, width: 64}
+        - {id: pic_to_safety, name: to_safety_island, direction: output, width: 8}
+    - id: clic
+      name: CLIC
+      kind: controller
+      clock_domain: cpu_clk
+      reset_domain: cpu_rst
+      power_domain: pd_core
+      safety_domain: safe_normal
+      security_domain: secure
+    - id: safety_island
+      name: Safety Island
+      kind: subsystem
+      clock_domain: safe_clk
+      reset_domain: safe_rst
+      power_domain: pd_safe
+      safety_domain: safe_critical
+      security_domain: secure
+    - id: apb_interconnect
+      name: APB Interconnect
+      kind: interconnect
+      clock_domain: periph_clk
+      reset_domain: periph_rst
+      power_domain: pd_periph
+      safety_domain: safe_normal
+      security_domain: secure
+    - id: memory
+      name: System Memory
+      kind: memory
+      clock_domain: mem_clk
+      reset_domain: mem_rst
+      power_domain: pd_mem
+      safety_domain: safe_normal
+      security_domain: secure
+
+  interfaces:
+    - {id: apb_0, name: apb_master, role: master, protocol: APB, data_width: 32, owner: apb_interconnect}
+    - {id: apb_1, name: apb_pic, role: slave, protocol: APB, data_width: 32, owner: pic}
+
+  connections:
+    - {id: c_cpu_to_mem, from: cpu_cluster, to: memory, kind: bus, protocol: AXI, data_width: 128, addr_width: 40, through: axi_cdc_bridge, cdc_handled: true, rdc_handled: true}
+    - {id: c_dsp_to_mem, from: dsp_subsystem, to: memory, kind: bus, protocol: AXI, data_width: 64, addr_width: 40, through: axi_cdc_bridge, cdc_handled: true, rdc_handled: true}
+    - {id: c_apb_cfg, from: apb_interconnect, to: pic, kind: bus, protocol: APB, data_width: 32, addr_width: 16}
+    - {id: c_irq_src_to_pic, from: cpu_cluster, to: pic, kind: interrupt, width: 32, through: irq_sync, cdc_handled: true, rdc_handled: true}
+    - {id: c_irq_dsp_to_pic, from: dsp_subsystem, to: pic, kind: interrupt, width: 32, through: irq_sync, cdc_handled: true, rdc_handled: true}
+    - {id: c_pic_to_clic, from: pic, to: clic, kind: interrupt, width: 64, through: irq_aggregator, rdc_handled: true}
+    - {id: c_pic_to_safety, from: pic, to: safety_island, kind: interrupt, width: 8, through: fault_monitor, rdc_handled: true}
+    - {id: c_fault_to_safety, from: pic, to: safety_island, kind: safety, through: fault_monitor, rdc_handled: true}
+    - {id: c_clk_cpu, from: cpu_cluster, to: clic, kind: clock}
+    - {id: c_clk_periph, from: apb_interconnect, to: pic, kind: clock}
+    - {id: c_rst_cpu, from: cpu_cluster, to: clic, kind: reset}
+
+  address_spaces:
+    - {id: as_pic, name: PIC_REG, base: 0x4000_0000, size: 0x0000_1000, initiator: apb_interconnect, target: pic}
+    - {id: as_mem, name: SYS_MEM, base: 0x0000_0000, size: 0x1000_0000, initiator: cpu_cluster, target: memory}
+
+  clock_domains:
+    - {id: cpu_clk, name: CPU Clock, kind: clock}
+    - {id: dsp_clk, name: DSP Clock, kind: clock}
+    - {id: periph_clk, name: Peripheral Clock, kind: clock}
+    - {id: safe_clk, name: Safety Clock, kind: clock}
+    - {id: mem_clk, name: Memory Clock, kind: clock}
+
+  reset_domains:
+    - {id: cpu_rst, name: CPU Reset, kind: reset}
+    - {id: dsp_rst, name: DSP Reset, kind: reset}
+    - {id: periph_rst, name: Peripheral Reset, kind: reset}
+    - {id: safe_rst, name: Safety Reset, kind: reset}
+    - {id: mem_rst, name: Memory Reset, kind: reset}
+
+  power_domains:
+    - {id: pd_core, name: Core PD, kind: power}
+    - {id: pd_dsp, name: DSP PD, kind: power}
+    - {id: pd_periph, name: Peripheral PD, kind: power}
+    - {id: pd_safe, name: Safety PD, kind: power}
+    - {id: pd_mem, name: Memory PD, kind: power}
+
+  safety_domains:
+    - {id: safe_normal, name: Normal Safety, kind: safety}
+    - {id: safe_critical, name: Critical Safety, kind: safety}
+
+  security_domains:
+    - {id: secure, name: Secure, kind: security}
+
+  interrupts:
+    - {id: irq_cpu_0, name: "CPU IRQ[0]", source: cpu_cluster, target: pic, width: 1, number: 0}
+    - {id: irq_dsp_0, name: "DSP IRQ[0]", source: dsp_subsystem, target: pic, width: 1, number: 32}
+    - {id: irq_pic_clic, name: PIC→CLIC, source: pic, target: clic, width: 64, through: irq_aggregator}
+    - {id: irq_pic_safety, name: PIC→Safety, source: pic, target: safety_island, width: 8, through: fault_monitor}

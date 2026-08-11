@@ -1,0 +1,45 @@
+# DMA Control FSM（建设方案 §11.2 Case 3 / §3.4-A 示例）
+# 覆盖 Idle、Config、Transfer、Complete、Error、Recovery。
+schema_version: "1.0"
+
+diagram:
+  id: dma-control-fsm
+  type: rtl_behavior
+  subtype: fsm
+  title: DMA Control FSM
+  abstraction: rtl_behavior
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: rtl/dma_ctrl.sv, role: rtl}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+
+layout:
+  direction: top_to_bottom
+  detail_level: register_transfer
+
+behavior:
+  initial_state: idle
+  encoding: one_hot
+  states:
+    - {id: idle, category: reset}
+    - {id: config, category: normal}
+    - {id: transfer, category: normal}
+    - {id: complete, category: normal}
+    - {id: error, category: fault}
+    - {id: recovery, category: recovery}
+  transitions:
+    - {from: idle, to: config, condition: "start && cfg_valid", action: clear_count, source: rtl}
+    - {from: config, to: transfer, condition: cfg_done, action: begin_transfer, source: rtl}
+    - {from: transfer, to: complete, condition: last_beat, action: set_done_irq, source: rtl}
+    - {from: transfer, to: error, condition: bus_error, action: set_error_irq, source: rtl}
+    - {from: error, to: recovery, condition: retry_en, action: clear_error, source: rtl}
+    - {from: recovery, to: config, condition: recovery_done, action: restart_cfg, source: rtl}
+    - {from: complete, to: idle, condition: irq_cleared, action: power_down, source: rtl}
+    - {from: config, to: idle, condition: abort, action: clear_count, source: inferred}

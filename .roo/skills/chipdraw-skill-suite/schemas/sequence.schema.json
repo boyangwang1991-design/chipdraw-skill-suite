@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/sequence.schema.json",
+  "title": "事务序列专业模型",
+  "description": "Actor/Module 之间的消息次序表达，不承担逐周期电平表达。定义见 fsm.schema.json 的 definitions.sequence。",
+  "$ref": "fsm.schema.json#/definitions/sequence"
+}

@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/ip.schema.json",
+  "title": "IP 微架构专业模型",
+  "description": "L2 IP 微架构级设计对象：模块、端口、接口、数据通路、控制通路、流水线、FIFO、仲裁、寄存器接口、CDC/RDC、安全机制、RTL 绑定。",
+  "type": "object",
+  "properties": {
+    "modules": { "type": "array", "items": { "$ref": "#/definitions/module" } },
+    "ports": { "type": "array", "items": { "$ref": "#/definitions/port" } },
+    "interfaces": { "type": "array", "items": { "$ref": "#/definitions/interface" } },
+    "datapaths": { "type": "array", "items": { "$ref": "#/definitions/path" } },
+    "control_paths": { "type": "array", "items": { "$ref": "#/definitions/path" } },
+    "pipelines": { "type": "array", "items": { "$ref": "#/definitions/pipeline" } },
+    "buffers": { "type": "array", "items": { "$ref": "#/definitions/buffer" } },
+    "arbiters": { "type": "array", "items": { "$ref": "#/definitions/arbiter" } },
+    "register_interfaces": { "type": "array", "items": { "$ref": "#/definitions/register_interface" } },
+    "cdc_paths": { "type": "array", "items": { "$ref": "#/definitions/cdc_path" } },
+    "rdc_paths": { "type": "array", "items": { "$ref": "#/definitions/cdc_path" } },
+    "safety_mechanisms": { "type": "array", "items": { "$ref": "#/definitions/safety_mechanism" } },
+    "rtl_bindings": { "type": "array", "items": { "$ref": "#/definitions/rtl_binding" } }
+  },
+  "definitions": {
+    "trace": {
+      "type": "object",
+      "properties": {
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": { "type": "string" },
+              "anchor": { "type": "string" },
+              "symbol": { "type": "string" }
+            }
+          }
+        },
+        "confidence": { "type": "string", "enum": ["confirmed", "extracted", "inferred", "tbd"] },
+        "owner": { "type": "string" },
+        "review_status": { "type": "string" }
+      }
+    },
+    "module": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "kind": { "type": "string", "enum": ["datapath", "control", "pipeline_stage", "buffer", "arbiter", "converter", "synchronizer", "fifo", "decoder", "mux", "scheduler", "other"] },
+        "parent": { "type": "string" },
+        "clock_domain": { "type": "string" },
+        "reset_domain": { "type": "string" },
+        "power_domain": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "port": {
+      "type": "object",
+      "required": ["id", "name", "direction"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "direction": { "type": "string", "enum": ["input", "output", "inout"] },
+        "width": { "type": "integer", "minimum": 1 },
+        "kind": { "type": "string", "enum": ["data", "control", "clock", "reset", "power", "interrupt", "error", "interface"] },
+        "protocol": { "type": "string" },
+        "clock_domain": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "required": ["id", "name", "protocol"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "protocol": { "type": "string" },
+        "data_width": { "type": "integer" },
+        "addr_width": { "type": "integer" },
+        "owner": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "path": {
+      "type": "object",
+      "required": ["id", "from", "to"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "width": { "type": "integer" },
+        "through_converter": { "type": "string" },
+        "kind": { "type": "string", "enum": ["datapath", "control"] },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "pipeline": {
+      "type": "object",
+      "required": ["id", "name", "stages"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "name"],
+            "properties": {
+              "index": { "type": "integer" },
+              "name": { "type": "string" },
+              "latency": { "type": "integer" }
+            }
+          }
+        },
+        "valid_ready": { "type": "boolean" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "buffer": {
+      "type": "object",
+      "required": ["id", "name", "depth", "width"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "depth": { "type": "integer", "minimum": 1 },
+        "width": { "type": "integer", "minimum": 1 },
+        "kind": { "type": "string", "enum": ["fifo", "queue", "register_file", "sram", "other"] },
+        "async": { "type": "boolean", "default": false },
+        "read_clock_domain": { "type": "string" },
+        "write_clock_domain": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "arbiter": {
+      "type": "object",
+      "required": ["id", "name", "inputs", "output"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "inputs": { "type": "array", "items": { "type": "string" } },
+        "output": { "type": "string" },
+        "policy": { "type": "string", "enum": ["round_robin", "priority", "fixed", "lru"] },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "register_interface": {
+      "type": "object",
+      "required": ["id", "name", "protocol"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "protocol": { "type": "string", "enum": ["apb", "axi-lite", "ahb-lite", "custom"] },
+        "fields": { "type": "array", "items": { "$ref": "#/definitions/reg_field" } },
+        "systemrdl_binding": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "reg_field": {
+      "type": "object",
+      "required": ["name", "offset", "width"],
+      "properties": {
+        "name": { "type": "string" },
+        "offset": { "type": "integer" },
+        "width": { "type": "integer" },
+        "access": { "type": "string", "enum": ["rw", "ro", "wo", "w1c", "w1s"] }
+      }
+    },
+    "cdc_path": {
+      "type": "object",
+      "required": ["id", "from_domain", "to_domain", "mechanism"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "from_domain": { "type": "string" },
+        "to_domain": { "type": "string" },
+        "mechanism": { "type": "string", "enum": ["2ff_sync", "handshake", "async_fifo", "pulse_sync", "gray_code", "reset_sync", "none", "tbd"] },
+        "waiver": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "safety_mechanism": {
+      "type": "object",
+      "required": ["id", "name", "kind", "monitors"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "kind": { "type": "string", "enum": ["ecc", "parity", "lockstep", "watchdog", "bist", "fault_monitor", "redundant", "other"] },
+        "monitors": { "type": "array", "items": { "type": "string" } },
+        "fault_response": { "type": "string" },
+        "reporting_path": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "rtl_binding": {
+      "type": "object",
+      "required": ["id", "module", "rtl_path"],
+      "properties": {
+        "id": { "type": "string" },
+        "module": { "type": "string" },
+        "rtl_path": { "type": "string" },
+        "top": { "type": "boolean", "default": false },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+# APB Write Transaction Timing（建设方案 §11.2 Case 4 / §3.4-B 示例）
+# 覆盖正常事务、Wait State、Error Response、Backpressure。
+schema_version: "1.0"
+
+diagram:
+  id: apb-write-timing
+  type: rtl_behavior
+  subtype: timing
+  title: APB Write Transaction
+  abstraction: rtl_behavior
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: specs/apb_protocol.md, role: protocol}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+
+behavior:
+  clock:
+    name: pclk
+    period: 10ns
+  signals:
+    - {name: psel, wave: "0.1...0"}
+    - {name: penable, wave: "0..1..0"}
+    - {name: pwrite, wave: "0.1...0"}
+    - {name: paddr, wave: "x.3...x", data: ["ADDR"]}
+    - {name: pwdata, wave: "x.4...x", data: ["DATA"]}
+    - {name: pready, wave: "1.....1"}
+  markers:
+    - {cycle: 2, text: setup}
+    - {cycle: 3, text: access}
+  origin: spec
+  protocol_rules: APB 写事务需 Setup 相位（PSEL 高、PENABLE 低）+ Access 相位（PENABLE 高）

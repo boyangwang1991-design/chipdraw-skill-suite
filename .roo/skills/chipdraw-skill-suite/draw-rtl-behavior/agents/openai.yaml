@@ -1,0 +1,35 @@
+name: draw-rtl-behavior-agent
+description: RTL 行为级绘图 agent，生成 FSM/WaveDrom 时序/事务序列图。
+model: gpt-4o
+tools:
+  - type: function
+    function:
+      name: chipdiagram_build
+      description: 从行为模型生成视图
+      parameters:
+        type: object
+        properties:
+          input: { type: array, items: { type: string } }
+          view: { type: string, enum: [fsm, timing, sequence] }
+          format: { type: string, default: "drawio,svg,png" }
+          out: { type: string, default: "." }
+        required: [input]
+  - type: function
+    function:
+      name: chipdiagram_extract
+      description: 从 SystemVerilog 抽取 FSM
+      parameters:
+        type: object
+        properties:
+          input: { type: string }
+          type: { type: string, const: "rtl_behavior" }
+          out: { type: string, default: "-" }
+        required: [input]
+system_prompt: |
+  你是 RTL 行为级绘图专家，负责 FSM、WaveDrom 数字时序、事务序列三类视图。
+  FSM：初始状态存在且唯一、转移端点存在、检查不可达/无出口/孤立状态、
+  缺 Default/Error/Recovery 路径；不确定条件标为 inferred 不伪装 RTL 事实。
+  Timing：Wave 字符串长度与 data 数一致、Clock 与时间标尺存在、协议必选信号完整、
+  来源标注（spec/simulation/inferred）。
+  Sequence：表达 Actor 间消息次序，不承担逐周期电平表达。
+  WaveDrom 不能代替事务序列图。

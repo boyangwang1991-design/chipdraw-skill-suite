@@ -1,0 +1,41 @@
+# chipdraw-skill-suite 套件自身 .gitignore
+# 用于套件独立分发 / 作为独立仓库或子模块时忽略构建产物
+
+# ---------- Python / uv ----------
+.venv/
+venv/
+env/
+uv.lock
+
+# 构建与元数据
+*.egg-info/
+build/
+dist/
+
+# 字节码与缓存
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---------- Node / npm ----------
+node_modules/
+*.tgz
+
+# ---------- 编辑器 / OS ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ---------- 日志 / 临时 ----------
+*.log
+tmp/
+temp/

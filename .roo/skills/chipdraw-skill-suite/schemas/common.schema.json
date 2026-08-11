@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/common.schema.json",
+  "title": "芯片图形语义模型公共 Envelope",
+  "description": "所有图类型共享的外层结构。diagram.type 决定使用哪一个专用节点（soc/ip/behavior/circuit），禁止形成单个超级 Schema。",
+  "type": "object",
+  "required": ["schema_version", "diagram", "provenance"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "diagram": {
+      "type": "object",
+      "required": ["id", "type", "title"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+        "type": {
+          "type": "string",
+          "enum": ["soc_architecture", "ip_architecture", "rtl_behavior", "transistor_schematic"]
+        },
+        "subtype": { "type": "string", "description": "如 interrupt_network、fsm、timing、sequence、bus_interconnect 等" },
+        "title": { "type": "string" },
+        "abstraction": {
+          "type": "string",
+          "enum": ["soc", "ip", "rtl_behavior", "transistor"]
+        },
+        "language": { "type": "string", "default": "zh-CN" },
+        "status": { "type": "string", "enum": ["draft", "review", "approved"], "default": "draft" }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["generator"],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path"],
+            "properties": {
+              "path": { "type": "string" },
+              "role": { "type": "string", "enum": ["specification", "ssot", "rtl", "verification", "protocol", "spice"] }
+            }
+          }
+        },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "generator": { "type": "string", "const": "chip-design-diagram-suite" }
+      },
+      "additionalProperties": false
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "theme": { "type": "string", "enum": ["aixsilicon-light", "aixsilicon-dark"] },
+        "page": { "type": "string", "enum": ["16:9", "4:3", "A4"], "default": "16:9" },
+        "colorblind_safe": { "type": "boolean", "default": true }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "direction": { "type": "string", "enum": ["left_to_right", "top_to_bottom"], "default": "left_to_right" },
+        "detail_level": { "type": "string", "enum": ["architecture", "microarchitecture", "register_transfer", "transistor"] },
+        "max_visible_blocks": { "type": "integer", "minimum": 1, "default": 20 }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "editable": { "type": "array", "items": { "type": "string", "enum": ["drawio"] } },
+        "rendered": { "type": "array", "items": { "type": "string", "enum": ["svg", "png", "pdf"] } },
+        "reports": { "type": "array", "items": { "type": "string", "enum": ["validation", "manifest"] } }
+      }
+    },
+    "traceability": {
+      "type": "object",
+      "properties": {
+        "requirement_ids": { "type": "array", "items": { "type": "string" } },
+        "design_version": { "type": "string" }
+      }
+    },
+    "view": { "$ref": "view.schema.json" },
+    "soc": { "$ref": "soc.schema.json" },
+    "ip": { "$ref": "ip.schema.json" },
+    "behavior": { "$ref": "fsm.schema.json" },
+    "circuit": { "$ref": "circuit.schema.json" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "diagram": { "properties": { "type": { "const": "soc_architecture" } } } } },
+      "then": { "required": ["soc"] }
+    },
+    {
+      "if": { "properties": { "diagram": { "properties": { "type": { "const": "ip_architecture" } } } } },
+      "then": { "required": ["ip"] }
+    },
+    {
+      "if": { "properties": { "diagram": { "properties": { "type": { "const": "rtl_behavior" } } } } },
+      "then": { "required": ["behavior"] }
+    },
+    {
+      "if": { "properties": { "diagram": { "properties": { "type": { "const": "transistor_schematic" } } } } },
+      "then": { "required": ["circuit"] }
+    }
+  ]
+}

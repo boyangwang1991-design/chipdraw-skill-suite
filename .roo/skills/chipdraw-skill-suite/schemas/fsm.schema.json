@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/fsm.schema.json",
+  "title": "RTL 行为模型（FSM / Timing / Sequence）",
+  "description": "L3 RTL 行为级：状态机、数字时序（WaveDrom）、事务序列。一个 type 节点承载三小类，由 subtype 区分。",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/definitions/fsm" },
+    { "$ref": "#/definitions/timing" },
+    { "$ref": "#/definitions/sequence" }
+  ],
+  "definitions": {
+    "trace": {
+      "type": "object",
+      "properties": {
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": { "type": "string" },
+              "anchor": { "type": "string" },
+              "symbol": { "type": "string" }
+            }
+          }
+        },
+        "confidence": { "type": "string", "enum": ["confirmed", "extracted", "inferred", "tbd"] },
+        "owner": { "type": "string" },
+        "review_status": { "type": "string" }
+      }
+    },
+    "fsm": {
+      "type": "object",
+      "required": ["initial_state", "states", "transitions"],
+      "properties": {
+        "initial_state": { "type": "string" },
+        "encoding": { "type": "string", "enum": ["one_hot", "binary", "gray", "unknown"] },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "category"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "category": { "type": "string", "enum": ["normal", "fault", "reset", "recovery", "error"] },
+              "encoding_value": { "type": "string" },
+              "trace": { "$ref": "#/definitions/trace" }
+            }
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "condition": { "type": "string" },
+              "action": { "type": "string" },
+              "source": { "type": "string", "enum": ["rtl", "spec", "inferred"], "default": "inferred" },
+              "trace": { "$ref": "#/definitions/trace" }
+            }
+          }
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "required": ["clock", "signals"],
+      "properties": {
+        "clock": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string" },
+            "period": { "type": "string" },
+            "phase": { "type": "string" }
+          }
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "wave"],
+            "properties": {
+              "name": { "type": "string" },
+              "wave": { "type": "string", "description": "WaveDrom wave 字符串，如 0.1...0" },
+              "data": { "type": "array", "items": { "type": "string" } },
+              "node": { "type": "string", "description": "WaveDrom node 字符串" },
+              "required": { "type": "boolean", "default": false }
+            }
+          }
+        },
+        "markers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["cycle", "text"],
+            "properties": {
+              "cycle": { "type": "integer" },
+              "text": { "type": "string" }
+            }
+          }
+        },
+        "protocol_rules": { "type": "string", "description": "如 APB setup/access 相位要求" },
+        "origin": { "type": "string", "enum": ["spec", "simulation", "inferred"], "default": "inferred" }
+      }
+    },
+    "sequence": {
+      "type": "object",
+      "required": ["participants", "messages"],
+      "properties": {
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "actor": { "type": "boolean", "default": false }
+            }
+          }
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "label"],
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "label": { "type": "string" },
+              "async": { "type": "boolean", "default": false },
+              "return": { "type": "boolean", "default": false },
+              "note": { "type": "string" },
+              "over": { "type": "string" },
+              "trace": { "$ref": "#/definitions/trace" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

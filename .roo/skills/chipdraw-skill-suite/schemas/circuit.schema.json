@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/circuit.schema.json",
+  "title": "晶体管/电路专业模型",
+  "description": "L4 Circuit/Transistor 级：器件、网络、引脚、子电路、模型。Engineering Mode 以 SPICE/CDL 为事实源，Illustration Mode 仅示意。",
+  "type": "object",
+  "required": ["mode"],
+  "properties": {
+    "mode": { "type": "string", "enum": ["illustration", "engineering"] },
+    "ports": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/port" }
+    },
+    "devices": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/device" }
+    },
+    "nets": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/net" }
+    },
+    "subcircuits": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/subcircuit" }
+    },
+    "pdk": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "symbol_library": { "type": "string" }
+      }
+    }
+  },
+  "definitions": {
+    "trace": {
+      "type": "object",
+      "properties": {
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": { "type": "string" },
+              "anchor": { "type": "string" },
+              "symbol": { "type": "string" }
+            }
+          }
+        },
+        "confidence": { "type": "string", "enum": ["confirmed", "extracted", "inferred", "tbd"] },
+        "owner": { "type": "string" },
+        "review_status": { "type": "string" }
+      }
+    },
+    "port": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "direction": { "type": "string", "enum": ["input", "output", "inout"], "description": "power/ground 端口可省略 direction" },
+        "kind": { "type": "string", "enum": ["signal", "power", "ground", "clock"] },
+        "net": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "device": {
+      "type": "object",
+      "required": ["id", "type", "terminals"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["pmos", "nmos", "resistor", "capacitor", "inductor", "diode", "supply", "subckt_instance", "other"] },
+        "model": { "type": "string" },
+        "parameters": { "type": "object", "additionalProperties": { "type": "string" } },
+        "terminals": { "type": "object", "additionalProperties": { "type": "string" } },
+        "symbol": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "net": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "kind": { "type": "string", "enum": ["signal", "power", "ground"] },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "subcircuit": {
+      "type": "object",
+      "required": ["id", "name", "ports"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ports": { "type": "array", "items": { "type": "string" } },
+        "model": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    }
+  }
+}

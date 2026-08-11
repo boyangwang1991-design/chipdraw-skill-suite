@@ -1,0 +1,78 @@
+# AIXSILICON Dark 主题
+# 对齐上游 drawio-skill preset 结构，深色背景变体。
+name: aixsilicon-dark
+version: 1
+default: false
+source: { type: built-in }
+confidence: high
+
+palette:
+  primary:   { fillColor: "#1e3a5f", strokeColor: "#6c8ebf" }
+  success:   { fillColor: "#1e4d2b", strokeColor: "#82b366" }
+  warning:   { fillColor: "#4a4216", strokeColor: "#d6b656" }
+  accent:    { fillColor: "#4a3416", strokeColor: "#d79b00" }
+  danger:    { fillColor: "#4a1f1f", strokeColor: "#b85450" }
+  neutral:   { fillColor: "#333333", strokeColor: "#999999" }
+  secondary: { fillColor: "#3a2d44", strokeColor: "#9673a6" }
+
+roles:
+  cpu: primary
+  dsp: primary
+  npu: primary
+  memory: success
+  buffer: success
+  fifo: success
+  peripheral: accent
+  subsystem: secondary
+  control: secondary
+  interconnect: warning
+  arbiter: warning
+  converter: warning
+  mux: warning
+  controller: warning
+  bridge: warning
+  phy: neutral
+  external: neutral
+  datapath: primary
+  synchronizer: danger
+  safety: danger
+  clock: neutral
+  reset: neutral
+  power: neutral
+  interrupt: warning
+
+shapes:
+  datapath: "rounded=1"
+  control: "rounded=1"
+  memory: "shape=cylinder3"
+  buffer: "rounded=1"
+  fifo: "rounded=1"
+  arbiter: "rhombus"
+  converter: "rounded=1"
+  decision: "rhombus"
+  container: "swimlane;startSize=30"
+  domain: "rounded=0;dashed=1"
+
+font:
+  fontFamily: "Helvetica"
+  fontSize: 12
+  titleFontSize: 14
+  titleBold: true
+  fontColor: "#e0e0e0"
+
+edges:
+  style: "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1"
+  arrow: "endArrow=classic;endFill=1"
+  dashedFor: [clock, reset, inferred]
+  chip:
+    datapath: "strokeColor=#4da6ff;strokeWidth=3"
+    control: "strokeColor=#b06ae0;strokeWidth=1"
+    clock: "strokeColor=#4fd68a;dashed=1"
+    reset: "strokeColor=#a0a0a0;dashed=1"
+    interrupt: "strokeColor=#ff9a3d;strokeWidth=1.5"
+    error: "strokeColor=#ff6b6b;strokeWidth=1.5"
+
+extras:
+  sketch: false
+  globalStrokeWidth: 1
+  background: "#1a1a2e"

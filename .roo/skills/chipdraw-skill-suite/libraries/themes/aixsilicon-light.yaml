@@ -1,0 +1,78 @@
+# AIXSILICON Light 主题
+# 对齐上游 drawio-skill preset 结构（styles/schema.json），并扩展芯片语义。
+$schema: "../schemas/theme.schema.json"   # 占位；实际校验沿用上游 schema.json 语义
+name: aixsilicon-light
+version: 1
+default: true
+source: { type: built-in }
+confidence: high
+
+palette:
+  primary:   { fillColor: "#dae8fc", strokeColor: "#6c8ebf" }   # 数据通路 / CPU / DSP / NPU
+  success:   { fillColor: "#d5e8d4", strokeColor: "#82b366" }   # Memory / Buffer / FIFO
+  warning:   { fillColor: "#fff2cc", strokeColor: "#d6b656" }   # Interconnect / Arbiter / Converter
+  accent:    { fillColor: "#ffe6cc", strokeColor: "#d79b00" }   # Peripheral
+  danger:    { fillColor: "#f8cecc", strokeColor: "#b85450" }   # Synchronizer / Error
+  neutral:   { fillColor: "#f5f5f5", strokeColor: "#666666" }   # PHY / 外部
+  secondary: { fillColor: "#e1d5e7", strokeColor: "#9673a6" }   # Control / Subsystem
+
+roles:
+  cpu: primary
+  dsp: primary
+  npu: primary
+  memory: success
+  buffer: success
+  fifo: success
+  peripheral: accent
+  subsystem: secondary
+  control: secondary
+  interconnect: warning
+  arbiter: warning
+  converter: warning
+  mux: warning
+  controller: warning
+  bridge: warning
+  phy: neutral
+  external: neutral
+  datapath: primary
+  synchronizer: danger
+  safety: danger
+  clock: neutral
+  reset: neutral
+  power: neutral
+  interrupt: warning
+
+shapes:
+  datapath: "rounded=1"
+  control: "rounded=1"
+  memory: "shape=cylinder3"
+  buffer: "rounded=1"
+  fifo: "rounded=1"
+  arbiter: "rhombus"
+  converter: "rounded=1"
+  decision: "rhombus"
+  container: "swimlane;startSize=30"
+  domain: "rounded=0;dashed=1"
+
+font:
+  fontFamily: "Helvetica"
+  fontSize: 12
+  titleFontSize: 14
+  titleBold: true
+
+edges:
+  style: "edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1"
+  arrow: "endArrow=classic;endFill=1"
+  dashedFor: [clock, reset, inferred]
+  # 芯片语义边样式（线型 + 颜色双编码，避免颜色作为唯一语义，建设方案 §16）
+  chip:
+    datapath: "strokeColor=#1e77b4;strokeWidth=3"
+    control: "strokeColor=#7b3fa0;strokeWidth=1"
+    clock: "strokeColor=#2e8b57;dashed=1"
+    reset: "strokeColor=#808080;dashed=1"
+    interrupt: "strokeColor=#e07b00;strokeWidth=1.5"
+    error: "strokeColor=#b85450;strokeWidth=1.5"
+
+extras:
+  sketch: false
+  globalStrokeWidth: 1

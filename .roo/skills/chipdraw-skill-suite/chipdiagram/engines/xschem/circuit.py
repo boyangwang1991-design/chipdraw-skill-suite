@@ -1,0 +1,165 @@
+"""晶体管/电路渲染（建设方案 §3.5）。
+
+区分两种模式：
+- Illustration Mode：Draw.io/SVG 示意，标注 NON-SIMULATABLE ILLUSTRATION，
+  允许简化 Bulk/模型/参数，不生成权威 SPICE 网表。
+- Engineering Mode：生成 Xschem .sch 源文件 + SPICE 网表 + ERC 报告。
+
+Illustration Mode 是 V1.0 默认（Engineering Mode 依赖外部 Xschem/ngspice/PDK）。
+"""
+from __future__ import annotations
+
+import os
+from typing import Any
+
+from ...views import ViewSelection
+from ..drawio.xmlgen import DrawioBuilder, STYLE_EDGE
+
+MOS_STYLES = {
+    "pmos": "fillColor=#dae8fc;strokeColor=#6c8ebf;",
+    "nmos": "fillColor=#d5e8d4;strokeColor=#82b366;",
+    "resistor": "fillColor=#fff2cc;strokeColor=#d6b656;",
+    "capacitor": "fillColor=#ffe6cc;strokeColor=#d79b00;",
+    "supply": "fillColor=#f5f5f5;strokeColor=#666666;",
+}
+
+
+def render_circuit(selection: ViewSelection, formats: list[str] | None,
+                   out_dir: str, theme: dict[str, Any]) -> list[dict[str, str]]:
+    """渲染晶体管原理图。"""
+    circuit = selection.model.get("circuit") or {}
+    mode = circuit.get("mode", "illustration")
+    os.makedirs(out_dir, exist_ok=True)
+
+    if mode == "engineering":
+        return _render_engineering(selection, circuit, formats, out_dir)
+    return _render_illustration(selection, circuit, formats, out_dir)
+
+
+def _render_illustration(selection: ViewSelection, circuit: dict[str, Any],
+                         formats: list[str] | None, out_dir: str) -> list[dict[str, str]]:
+    """Illustration Mode：Draw.io 示意 + 强制 NON-SIMULATABLE 标注。"""
+    builder = DrawioBuilder(page_name=selection.view_id)
+    devices = circuit.get("devices") or []
+    nets = circuit.get("nets") or []
+
+    # 标题标注
+    builder.add_vertex("title_note", "NON-SIMULATABLE ILLUSTRATION",
+                       40, 20, 320, 30, "text;html=1;fontStyle=2;strokeColor=#b85450;")
+
+    x, y = 40, 80
+    for d in devices:
+        did = str(d.get("id"))
+        dtype = d.get("type", "other")
+        label = f"{d.get('model') or dtype}\\n{did}"
+        style = MOS_STYLES.get(dtype, "fillColor=#f5f5f5;strokeColor=#666666;")
+        builder.add_vertex(did, label, x, y, 120, 90, f"shape=process;whiteSpace=wrap;html=1;{style}")
+        x += 160
+
+    # 器件端子连接
+    for i, d in enumerate(devices):
+        terms = d.get("terminals") or {}
+        for term, net in terms.items():
+            for n in nets:
+                if str(n.get("name")) == str(net):
+                    builder.add_edge(f"t{i}_{term}", str(d.get("id")), f"net_{n.get('id')}",
+                                     term, STYLE_EDGE)
+                    break
+
+    # 网络节点
+    nx, ny = 40, 260
+    for n in nets:
+        nid = f"net_{n.get('id')}"
+        builder.add_vertex(nid, n.get("name"), nx, ny, 100, 30,
+                           "ellipse;fillColor=#f5f5f5;strokeColor=#666666;")
+        nx += 140
+
+    drawio_path = os.path.join(out_dir, "diagram.drawio")
+    builder.write(drawio_path)
+    artifacts: list[dict[str, str]] = [{"path": drawio_path, "format": "drawio", "kind": "editable"}]
+
+    fmt = [f for f in (formats or ["drawio", "svg", "png"]) if f in ("svg", "png", "pdf")]
+    if fmt:
+        from ..drawio.exporter import export_drawio
+        exported = export_drawio(drawio_path, os.path.join(out_dir, "diagram"), fmt, final=True)
+        for p in exported:
+            artifacts.append({"path": p, "format": p.rsplit(".", 1)[-1], "kind": "rendered"})
+    return artifacts
+
+
+def _render_engineering(selection: ViewSelection, circuit: dict[str, Any],
+                        formats: list[str] | None, out_dir: str) -> list[dict[str, str]]:
+    """Engineering Mode：SPICE 网表 + ERC 报告 + （可选）.sch。
+
+    Xschem .sch 与 SVG 渲染依赖外部 xschem/ngspice 工具链；缺失时
+    仅交付 SPICE 网表与 ERC 报告（仍为权威结构输出）。
+    """
+    artifacts: list[dict[str, str]] = []
+
+    # SPICE 网表
+    spice = _to_spice(circuit)
+    spice_path = os.path.join(out_dir, "diagram.spice")
+    with open(spice_path, "w", encoding="utf-8") as fh:
+        fh.write(spice)
+    artifacts.append({"path": spice_path, "format": "spice", "kind": "editable"})
+
+    # ERC 报告（结构级）
+    from ...validators.circuit_validator import validate_circuit
+    from ...issues import sort_issues
+    erc_issues = sort_issues(validate_circuit(selection.model, "engineering"))
+    erc_path = os.path.join(out_dir, "erc.md")
+    lines = ["# ERC 报告", ""]
+    if erc_issues:
+        for i in erc_issues:
+            lines.append(f"- **[{i.severity}]** `{i.code}` {i.message}")
+    else:
+        lines.append("无 ERC 问题。")
+    with open(erc_path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines))
+    artifacts.append({"path": erc_path, "format": "md", "kind": "report"})
+
+    # Xschem .sch（工具链可用时生成）
+    sch_path = _try_xschem_sch(circuit, out_dir)
+    if sch_path:
+        artifacts.append({"path": sch_path, "format": "sch", "kind": "editable"})
+    return artifacts
+
+
+def _to_spice(circuit: dict[str, Any]) -> str:
+    """从 Circuit YAML 生成 SPICE 网表（结构级，无仿真参数优化）。"""
+    lines = ["* Generated by chip-design-diagram-suite", "* NON-AUTHORITATIVE until validated against PDK"]
+    lines.append(f".title {circuit.get('_id', 'circuit')}")
+    for d in circuit.get("devices", []):
+        did = d.get("id")
+        dtype = d.get("type")
+        terms = d.get("terminals") or {}
+        if dtype == "pmos":
+            lines.append(f"MP {did} {terms.get('g','g')} {terms.get('d','d')} {terms.get('s','s')} "
+                         f"{terms.get('b','b')} {d.get('model','pmos')} "
+                         f"W={d.get('parameters',{}).get('w','?')} L={d.get('parameters',{}).get('l','?')}")
+        elif dtype == "nmos":
+            lines.append(f"MN {did} {terms.get('g','g')} {terms.get('d','d')} {terms.get('s','s')} "
+                         f"{terms.get('b','b')} {d.get('model','nmos')} "
+                         f"W={d.get('parameters',{}).get('w','?')} L={d.get('parameters',{}).get('l','?')}")
+        else:
+            lines.append(f"X {did} {' '.join(terms.values())} {d.get('model', dtype)}")
+    lines.append(".end")
+    return "\n".join(lines)
+
+
+def _try_xschem_sch(circuit: dict[str, Any], out_dir: str) -> str | None:
+    """生成简单 Xschem .sch 骨架。Xschem 未安装时仍写文件（.sch 是文本格式）。"""
+    import shutil
+    if shutil.which("xschem") is None:
+        # 不阻断：仍可写 .sch 文本，但标记需 Xschem 验证
+        pass
+    sch_path = os.path.join(out_dir, "diagram.sch")
+    lines = ["v 20230319 1", "VERSION_TXT 1.2 0 0"]
+    for i, d in enumerate(circuit.get("devices", [])):
+        did = d.get("id")
+        dtype = d.get("type")
+        lines.append(f"C {did} {i*100} 0 0 0 {dtype}")
+    lines.append(".")
+    with open(sch_path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines))
+    return sch_path

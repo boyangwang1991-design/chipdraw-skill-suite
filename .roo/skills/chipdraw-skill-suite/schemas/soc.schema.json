@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/soc.schema.json",
+  "title": "SoC 专业模型",
+  "description": "L1 SoC 系统级设计对象：实例、接口、连接、地址空间、时钟/复位/电源/安全/保密域、中断、层级。",
+  "type": "object",
+  "properties": {
+    "instances": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/instance" }
+    },
+    "interfaces": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/interface" }
+    },
+    "connections": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/connection" }
+    },
+    "address_spaces": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/address_space" }
+    },
+    "clock_domains": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/domain_ref" }
+    },
+    "reset_domains": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/domain_ref" }
+    },
+    "power_domains": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/domain_ref" }
+    },
+    "safety_domains": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/domain_ref" }
+    },
+    "security_domains": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/domain_ref" }
+    },
+    "interrupts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/interrupt" }
+    },
+    "hierarchies": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/hierarchy" }
+    }
+  },
+  "definitions": {
+    "trace": {
+      "type": "object",
+      "properties": {
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": { "type": "string" },
+              "anchor": { "type": "string" },
+              "symbol": { "type": "string" }
+            }
+          }
+        },
+        "confidence": { "type": "string", "enum": ["confirmed", "extracted", "inferred", "tbd"] },
+        "owner": { "type": "string" },
+        "review_status": { "type": "string" }
+      }
+    },
+    "instance": {
+      "type": "object",
+      "required": ["id", "name", "kind"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["cpu", "dsp", "npu", "memory", "peripheral", "subsystem", "interconnect", "controller", "bridge", "phy", "die", "chiplet", "other"]
+        },
+        "parent": { "type": "string", "description": "父容器 id（Subsystem/Die）" },
+        "clock_domain": { "type": "string" },
+        "reset_domain": { "type": "string" },
+        "power_domain": { "type": "string" },
+        "safety_domain": { "type": "string" },
+        "security_domain": { "type": "string" },
+        "ports": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/port" }
+        },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "port": {
+      "type": "object",
+      "required": ["id", "name", "direction"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "direction": { "type": "string", "enum": ["input", "output", "inout", "bidirectional"] },
+        "width": { "type": "integer", "minimum": 1 },
+        "protocol": { "type": "string", "description": "如 AXI、AXI-Lite、AHB、APB、CHI、NoC、TileLink" },
+        "mandatory": { "type": "boolean", "default": false },
+        "clock_domain": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "required": ["id", "name", "role", "protocol"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["initiator", "target", "master", "slave", "source", "sink"] },
+        "protocol": { "type": "string" },
+        "protocol_version": { "type": "string" },
+        "data_width": { "type": "integer" },
+        "addr_width": { "type": "integer" },
+        "id_width": { "type": "integer" },
+        "owner": { "type": "string", "description": "所属 instance/port id" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "connection": {
+      "type": "object",
+      "required": ["id", "from", "to", "kind"],
+      "properties": {
+        "id": { "type": "string" },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["bus", "interrupt", "clock", "reset", "power", "safety", "security", "dependency", "d2d", "other"]
+        },
+        "protocol": { "type": "string" },
+        "data_width": { "type": "integer" },
+        "addr_width": { "type": "integer" },
+        "through": { "type": "string", "description": "途经对象，如 synchronizer、firewall、bridge" },
+        "cdc_handled": { "type": "boolean" },
+        "rdc_handled": { "type": "boolean" },
+        "waiver": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "address_space": {
+      "type": "object",
+      "required": ["id", "name", "base", "size"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "base": { "type": ["string", "integer"], "description": "十六进制基地址，如 0x4000_0000（YAML 可能解析为整数）" },
+        "size": { "type": ["string", "integer"], "description": "十六进制大小" },
+        "initiator": { "type": "string" },
+        "target": { "type": "string" },
+        "read_only": { "type": "boolean", "default": false },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "domain_ref": {
+      "type": "object",
+      "required": ["id", "name", "kind"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "kind": { "type": "string", "enum": ["clock", "reset", "power", "safety", "security"] },
+        "parent": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "interrupt": {
+      "type": "object",
+      "required": ["id", "name", "source", "target"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "number": { "type": "integer" },
+        "width": { "type": "integer", "minimum": 1 },
+        "through": { "type": "string" },
+        "trace": { "$ref": "#/definitions/trace" }
+      }
+    },
+    "hierarchy": {
+      "type": "object",
+      "required": ["id", "parent", "child"],
+      "properties": {
+        "id": { "type": "string" },
+        "parent": { "type": "string" },
+        "child": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+# CMOS Inverter（建设方案 §11.2 Case 5 / §3.5 示例）
+# 覆盖 Illustration 与 Engineering 两模式。
+schema_version: "1.0"
+
+diagram:
+  id: cmos-inverter
+  type: transistor_schematic
+  subtype: schematic_engineering
+  title: CMOS Inverter
+  abstraction: transistor
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: cdl/inv.cdl, role: spice}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+
+circuit:
+  mode: engineering
+  pdk:
+    name: dummy_pdk
+    symbol_library: "${PDK_LIB}/symbols"
+  ports:
+    - {name: a, direction: input}
+    - {name: y, direction: output}
+    - {name: vdd, kind: power}
+    - {name: vss, kind: ground}
+  devices:
+    - id: mp0
+      type: pmos
+      model: pmos_1v8
+      parameters: {w: "2.0um", l: "0.18um"}
+      terminals: {g: a, d: y, s: vdd, b: vdd}
+    - id: mn0
+      type: nmos
+      model: nmos_1v8
+      parameters: {w: "1.0um", l: "0.18um"}
+      terminals: {g: a, d: y, s: vss, b: vss}
+  nets:
+    - {id: n_a, name: a}
+    - {id: n_y, name: y}
+    - {id: n_vdd, name: vdd}
+    - {id: n_vss, name: vss}

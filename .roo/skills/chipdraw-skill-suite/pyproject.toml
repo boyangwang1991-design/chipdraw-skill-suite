@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chipdiagram"
+version = "1.0.0"
+description = "芯片研发智能绘图 Skill Suite —— 从 SoC/IP/RTL 行为/晶体管级语义，生成可编辑、可验证、可追踪的工程图形资产。"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "AIXSILICON" }]
+keywords = ["chip-design", "diagram", "soc", "ip", "fsm", "wavedrom", "drawio", "skill-suite"]
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+graphviz = ["graphviz>=0.20"]
+wavedrom = []  # WaveDrom 渲染由外部 npm wavedrom-cli 或 draw.io CLI 承担
+xschem = []    # Xschem 后端需要外部 xschem + ngspice 工具链
+test = ["pytest>=7.0", "jsonschema>=4.0"]
+
+[project.scripts]
+chipdiagram = "chipdiagram.cli:main"
+
+[tool.setuptools]
+packages = ["chipdiagram", "chipdiagram.engines", "chipdiagram.engines.shared", "chipdiagram.engines.drawio", "chipdiagram.engines.graphviz", "chipdiagram.engines.wavedrom", "chipdiagram.engines.xschem", "chipdiagram.adapters", "chipdiagram.validators"]
+
+[tool.setuptools.package-data]
+chipdiagram = ["engines/shared/*.py", "data/*.json.gz", "styles/built-in/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["."]

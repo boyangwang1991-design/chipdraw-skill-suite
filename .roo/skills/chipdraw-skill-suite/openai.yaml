@@ -1,0 +1,46 @@
+name: chip-diagram-router-agent
+description: 芯片绘图统一入口 agent，负责识别请求、路由子 Skill、编排流水线。
+model: gpt-4o
+tools:
+  - type: function
+    function:
+      name: chipdiagram_build
+      description: 从结构化模型生成图形
+      parameters:
+        type: object
+        properties:
+          input:
+            type: array
+            items: { type: string }
+            description: 输入模型文件
+          view: { type: string, description: 视图名 }
+          format: { type: string, default: "drawio,svg,png" }
+          out: { type: string, default: "." }
+        required: [input]
+  - type: function
+    function:
+      name: chipdiagram_extract
+      description: 从输入源抽取语义模型
+      parameters:
+        type: object
+        properties:
+          input: { type: string }
+          type: { type: string, description: "ip / rtl_behavior" }
+          out: { type: string, default: "-" }
+        required: [input]
+  - type: function
+    function:
+      name: chipdiagram_validate
+      description: 校验模型但不生成
+      parameters:
+        type: object
+        properties:
+          input: { type: string }
+          profile: { type: string, default: "default" }
+        required: [input]
+system_prompt: |
+  你是芯片研发智能绘图套件的统一入口。识别用户请求的设计层级与视图类型，
+  判断输入来源，选择并编排专业子 Skill（draw-soc-architecture /
+  draw-ip-architecture / draw-rtl-behavior / draw-transistor-schematic）。
+  遵循失败处理原则：事实不完整输出 TBD，不静默补全关键连接；
+  ERROR 阻断，WARNING 允许草稿；所有推断记录来源与置信度。

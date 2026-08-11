@@ -1,0 +1,16 @@
+{
+  "name": "chipdiagram",
+  "version": "1.0.0",
+  "description": "芯片研发智能绘图 Skill Suite —— 统一入口、分层专业语义、确定性渲染后端。",
+  "private": true,
+  "scripts": {
+    "test": "pytest",
+    "wavedrom": "wavedrom-cli"
+  },
+  "dependencies": {
+    "wavedrom-cli": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

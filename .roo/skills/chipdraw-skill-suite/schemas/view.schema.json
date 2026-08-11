@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://chipdraw.aixsilicon.io/schemas/view.schema.json",
+  "title": "View Filter",
+  "description": "一份 SSOT 应能生成多张图。视图文件只定义选择和显示策略，不复制事实。",
+  "type": "object",
+  "required": ["id", "source_model"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "source_model": { "type": "string", "description": "指向 SSOT YAML 的相对路径" },
+    "include": {
+      "type": "object",
+      "properties": {
+        "connection_kinds": { "type": "array", "items": { "type": "string" } },
+        "blocks": { "type": "array", "items": { "type": "string" } },
+        "views": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "show": {
+      "type": "object",
+      "properties": {
+        "ports": { "type": "boolean", "default": true },
+        "widths": { "type": "boolean", "default": true },
+        "clock_domains": { "type": "boolean", "default": true },
+        "power_domains": { "type": "boolean", "default": false },
+        "reset_domains": { "type": "boolean", "default": false },
+        "safety_domains": { "type": "boolean", "default": false }
+      }
+    },
+    "collapse": {
+      "type": "object",
+      "properties": {
+        "axi_channels": { "type": "boolean", "default": true },
+        "wide_buses": { "type": "boolean", "default": true }
+      }
+    }
+  },
+  "additionalProperties": false
+}
