@@ -12,6 +12,9 @@ uv.lock
 build/
 dist/
 
+# skill-creator 评估产物（workspace 与审阅 HTML，不入库）
+chipdraw-skill-suite-workspace/
+
 # 字节码与缓存
 __pycache__/
 *.py[cod]

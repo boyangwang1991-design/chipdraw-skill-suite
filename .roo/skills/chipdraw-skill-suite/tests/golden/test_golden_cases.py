@@ -9,7 +9,8 @@ import os
 from chipdiagram import pipeline
 from chipdiagram.issues import count_by_severity
 
-EXAMPLES = os.path.join(os.path.dirname(__file__), "..", "..", "examples")
+# 示例位于 assets/examples（套件根下）
+EXAMPLES = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "examples")
 
 GOLDEN_CASES = [
     ("pic-subsystem/pic.yaml", {"view": "soc_overview"}, ["drawio"]),

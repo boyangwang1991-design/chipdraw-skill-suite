@@ -6,7 +6,8 @@ from chipdiagram.adapters.registry import extract_input
 from chipdiagram.model import normalize_model
 from chipdiagram.issues import count_by_severity
 
-EXAMPLES = os.path.join(os.path.dirname(__file__), "..", "..", "examples")
+# 示例位于 assets/examples（套件根下）
+EXAMPLES = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "examples")
 
 
 def test_pipeline_from_yaml_ssot(tmp_path):

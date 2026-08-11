@@ -1,7 +1,7 @@
 # SoC 符号库
 
 SoC 系统级绘图使用的块类型与默认样式。实际颜色由主题 roles 解析
-（见 `libraries/themes/aixsilicon-*.yaml`），此处只维护形状关键字。
+（见 `../themes/aixsilicon-*.yaml`），此处只维护形状关键字。
 
 | 块类型 | draw.io style |
 |---|---|

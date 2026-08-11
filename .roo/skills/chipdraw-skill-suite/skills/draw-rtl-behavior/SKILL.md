@@ -1,7 +1,7 @@
 ---
 name: draw-rtl-behavior
 version: 1.0.0
-description: RTL 行为级绘图 Skill（FSM / WaveDrom 数字时序 / 事务序列）。当用户请求绘制状态机、数字时序图、握手波形、Reset/Clock 时序、中断时序、CDC 时序、协议事务序列（CPU→DMA→Interconnect→Memory、中断源→PIC→CLIC、UVM Sequence→Driver→DUT→Monitor→Scoreboard）时使用。以 RTL/SVA/Testplan/协议规格为事实源，输出 Graphviz DOT/SVG（FSM）、WaveJSON/SVG/PNG（时序）、Draw.io 序列图（事务），并执行可达性/一致性/协议规则校验。
+description: RTL 行为级绘图 Skill（FSM / WaveDrom 数字时序 / 事务序列）。当用户请求绘制状态机、数字时序图、握手波形、Reset/Clock 时序、中断时序、CDC 时序、协议事务序列（CPU→DMA→Interconnect→Memory、中断源→PIC→CLIC、UVM Sequence→Driver→DUT→Monitor→Scoreboard）时使用；也适用于"画个波形""看下这个握手时序""这个状态机有哪些状态"等行为级描述。以 RTL/SVA/Testplan/协议规格为事实源，输出 Graphviz DOT/SVG（FSM）、WaveJSON/SVG/PNG（时序）、Draw.io 序列图（事务），并执行可达性/一致性/协议规则校验。
 license: MIT
 homepage: https://github.com/AIXSILICON/chip-design-diagram-suite
 compatibility: 需要 Python 3.9+、PyYAML、jsonschema；Graphviz dot（FSM）、wavedrom-cli（时序）、draw.io CLI（导出）为可选依赖。

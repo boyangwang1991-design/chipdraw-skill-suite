@@ -1,0 +1,64 @@
+{
+  "skill_name": "chip-diagram-router",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "画个 SoC 顶层架构图，把 CPU、DMA、几个外设和内存子系统放一起，还要标出 AXI 总线互连。我们刚做完 RTL freeze，这是给架构评审用的。",
+      "expected_output": "路由到 draw-soc-architecture 子 Skill，生成 soc_overview（或 bus_interconnect）视图的 Draw.io/SVG，Manifest 记录事实来源。",
+      "files": ["assets/examples/pic-subsystem/pic.yaml"],
+      "expectations": [
+        "输出 diagram.drawio 且可解析",
+        "视图属于 SoC 层级（soc_architecture）",
+        "ERROR=0，无关键连接被臆造（推断标记 inferred）",
+        "Manifest 存在且记录 source 与 statistics"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我把 DMA 控制器的内部模块画出来：有配置寄存器接口、几个 FIFO、一个数据通路，还有一个状态机控制搬运。用我们 RTL 里的实例名。",
+      "expected_output": "路由到 draw-ip-architecture 子 Skill，从 SystemVerilog 抽取 Module/Port/Instance，生成 ip_overview/datapath/pipeline 视图。",
+      "files": ["assets/examples/axi-width-converter/x2x.yaml"],
+      "expectations": [
+        "输出属于 IP 微架构层级（ip_architecture）",
+        "数据通路位宽标注清晰",
+        "RTL 端口/实例名出现在图中（或记录为 extracted 来源）",
+        "ERROR=0"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "画一个 DMA 的状态机：idle 等配置，收到 start 就去 transfer，搬运完回到 idle，出错进 error 状态。还要把 APB 写事务的波形画出来看看 setup/access 相位对不对。",
+      "expected_output": "路由到 draw-rtl-behavior 子 Skill，分别生成 fsm（Graphviz）与 timing（WaveDrom）两个视图。",
+      "files": ["assets/examples/dma-fsm/dma_fsm.yaml", "assets/examples/apb-timing/apb_timing.yaml"],
+      "expectations": [
+        "产出 diagram.dot（FSM）与 diagram.wave.json（时序）",
+        "FSM 检出不可达状态或缺少 recovery 路径",
+        "时序标注意 origin（spec/simulation/inferred）",
+        "ERROR=0"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "画个 CMOS 反相器原理图，用 PMOS 和 NMOS 搭。这个只是给 PPT 培训用的示意图，不用当真网表。",
+      "expected_output": "路由到 draw-transistor-schematic 子 Skill。若模型是 engineering 模式（权威事实），Illustration 视图请求不得把工程网表降级为示意图；若用户明确要示意图则输出标注 NON-SIMULATABLE ILLUSTRATION。",
+      "files": ["assets/examples/cmos-inverter/cmos_inverter.yaml"],
+      "expectations": [
+        "模型 circuit.mode=engineering 时产物保持工程输出（spice/sch），不被视图请求降级",
+        "工程模式输出记录 PDK 来源与 ERC 报告",
+        "ERROR=0"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我们有个新的中断控制器 PIC，帮我画一张它在整个 SoC 里的位置图，还有中断源的时序。这个 PIC 的 RTL 在 rtl/pic_top.sv。",
+      "expected_output": "组合请求：路由到 draw-soc-architecture（先出 SoC 上下文图）再调用 draw-rtl-behavior（中断时序子图），建立 diagram-set.yaml 关联多图。",
+      "files": ["assets/examples/pic-subsystem/pic.yaml"],
+      "expectations": [
+        "同时产出 SoC 上下文视图与中断时序视图",
+        "建立 diagram-set.yaml 记录跨图关联",
+        "先 SoC 后 RTL behavior 的编排顺序",
+        "ERROR=0"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 ---
 name: draw-transistor-schematic
 version: 1.0.0
-description: 晶体管级绘图 Skill。当用户请求绘制 CMOS 门、MOS 网络、反相器、NAND/NOR、Latch、Level Shifter、SRAM Bitcell、SPICE/CDL 子电路原理图时使用。必须区分 Illustration Mode（Draw.io/SVG 示意图，标注 NON-SIMULATABLE ILLUSTRATION）与 Engineering Mode（基于 SPICE/CDL/PDK 符号，Xschem 后端，输出 .sch/SPICE/SVG/PDF/ERC 报告），并执行 ERC（Bulk 错接、悬空 Gate、电源短路、四端完整、子电路端口一致）校验。
+description: 晶体管级绘图 Skill。当用户请求绘制 CMOS 门、MOS 网络、反相器、NAND/NOR、Latch、Level Shifter、SRAM Bitcell、SPICE/CDL 子电路原理图、模拟子电路时使用；也适用于"画个反相器""这个 CMOS 门怎么搭"等电路示意。必须区分 Illustration Mode（Draw.io/SVG 示意图，标注 NON-SIMULATABLE ILLUSTRATION）与 Engineering Mode（基于 SPICE/CDL/PDK 符号，Xschem 后端，输出 .sch/SPICE/SVG/PDF/ERC 报告），并执行 ERC（Bulk 错接、悬空 Gate、电源短路、四端完整、子电路端口一致）校验。
 license: MIT
 homepage: https://github.com/AIXSILICON/chip-design-diagram-suite
 compatibility: Engineering Mode 需要外部 Xschem、ngspice、PDK 符号库；Illustration Mode 仅需 draw.io CLI。

@@ -1,7 +1,7 @@
 ---
 name: draw-soc-architecture
 version: 1.0.0
-description: SoC 系统级绘图 Skill。当用户请求绘制 SoC 顶层框图、总线互联（AXI/AHB/APB/CHI/NoC/TileLink）、地址空间、时钟复位、电源域、中断网络、安全/保密域、FuseSoC 依赖、Chiplet 拓扑时使用。以 SoC Integration YAML/FuseSoC/IP-XACT 为权威事实源，输出 Draw.io + Graphviz 的 SOC 多视图，并执行协议/位宽/地址/跨域/中断规则校验。
+description: SoC 系统级绘图 Skill。当用户请求绘制 SoC 顶层框图、总线互联（AXI/AHB/APB/CHI/NoC/TileLink）、地址空间、时钟复位、电源域、中断网络、安全/保密域、FuseSoC 依赖、Chiplet 拓扑、片上网络、多核互联时使用；也适用于"画个整颗芯片架构""系统级框图"等口语化描述。以 SoC Integration YAML/FuseSoC/IP-XACT 为权威事实源，输出 Draw.io + Graphviz 的 SOC 多视图，并执行协议/位宽/地址/跨域/中断规则校验。
 license: MIT
 homepage: https://github.com/AIXSILICON/chip-design-diagram-suite
 compatibility: 需要 Python 3.9+、PyYAML、jsonschema；Graphviz dot（大型框图）、draw.io CLI（导出）为可选依赖。

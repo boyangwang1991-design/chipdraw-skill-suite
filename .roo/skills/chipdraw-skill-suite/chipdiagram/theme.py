@@ -8,7 +8,7 @@
     edges.{style,arrow,dashedFor}
     extras.{sketch,globalStrokeWidth}
 
-本仓内置 AIXSILICON 明暗主题位于 libraries/themes/aixsilicon-{light,dark}.yaml，
+本仓内置 AIXSILICON 明暗主题位于 assets/libraries/themes/aixsilicon-{light,dark}.yaml，
 同时兼容上游 chipdiagram/styles/built-in/*.json 作为降级基线。
 """
 from __future__ import annotations
@@ -23,8 +23,10 @@ except ImportError:  # pragma: no cover
     yaml = None
 
 # 仓库根：chipdiagram/ 的上一级
+# 仓库根：chipdiagram/ 的上一级
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LIBRARY_THEMES = os.path.join(REPO_ROOT, "libraries", "themes")
+# 主题库位于 assets/libraries/themes（套件根下）
+LIBRARY_THEMES = os.path.join(REPO_ROOT, "assets", "libraries", "themes")
 BUILTIN_STYLES = os.path.join(os.path.dirname(__file__), "styles", "built-in")
 
 

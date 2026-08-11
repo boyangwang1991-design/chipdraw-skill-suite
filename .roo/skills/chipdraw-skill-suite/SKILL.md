@@ -1,9 +1,7 @@
 ---
 name: chip-diagram-router
-version: 1.0.0
-description: 芯片研发智能绘图统一入口与路由器。当用户请求绘制芯片相关的框图、SoC 架构、IP 微架构、FSM 状态机、数字时序图（WaveDrom）、事务序列图、晶体管原理图时使用。识别设计层级与视图类型、判断输入（自然语言/YAML/RTL/FuseSoC/SystemRDL/IP-XACT/SPICE）、路由到一个或多个专业子 Skill（draw-soc-architecture / draw-ip-architecture / draw-rtl-behavior / draw-transistor-schematic），建立输出目录与 Manifest，汇总子图与校验结果。即使描述只是“画个架构图”“生成时序”“画状态机”等也应触发本 Skill 判断是否属于芯片领域。
+description: 芯片研发智能绘图统一入口与路由器，为芯片设计全层级（SoC/IP/RTL行为/晶体管）生成可编辑、可验证、可追踪的工程图形。当用户请求绘制芯片相关的框图、SoC 架构、IP 微架构、FSM 状态机、数字时序图（WaveDrom）、事务序列图、晶体管原理图、寄存器接口图、CDC/RDC 结构图、地址映射图时使用；也适用于从 RTL/FuseSoC/SystemRDL/IP-XACT/SPICE 抽取图形。识别设计层级与视图类型、判断输入来源、路由到一个或多个专业子 Skill，建立输出目录与 Manifest，汇总子图与校验结果。即使描述只是“画个架构图”“生成时序”“画状态机”“画个芯片框图”“这个 SoC 长什么样”等口语化表达，也应触发本 Skill 判断是否属于芯片领域，再由本 Skill 决定路由或降级。
 license: MIT
-homepage: https://github.com/AIXSILICON/chip-design-diagram-suite
 compatibility: 需要 Python 3.9+、PyYAML、jsonschema；draw.io CLI（导出 PNG/SVG/PDF）、Graphviz dot（FSM/大型框图布局）、wavedrom-cli（数字时序）为可选依赖。
 platforms: [macos, linux, windows]
 metadata: {"hermes":{"tags":["chip","soc","ip","fsm","wavedrom","sequence","transistor","diagram"],"category":"design"}}
@@ -19,7 +17,7 @@ metadata: {"hermes":{"tags":["chip","soc","ip","fsm","wavedrom","sequence","tran
 
 **使用**：SoC 架构、IP 微架构、FSM、数字时序、事务序列、晶体管原理图，以及从 RTL/FuseSoC/SystemRDL/IP-XACT/SPICE 抽取图形。
 
-**不使用**：与芯片设计无关的通用流程图/思维导图（转通用绘图 Skill）；已确认工程原理图需要商业 EDA 平台（如 Virtuoso）。
+**不使用**：与芯片设计无关的通用流程图/思维导图（转通用绘图 Skill）；已确认工程原理图需要商业 EDA 平台（如 Virtuoso）；图片/白板照片中无法可靠识别的对象（必须人工复核后转结构化输入）。
 
 ## 路由规则（建设方案 §3.1）
 
@@ -55,13 +53,13 @@ metadata: {"hermes":{"tags":["chip","soc","ip","fsm","wavedrom","sequence","tran
 
 ```bash
 # 从结构化模型生成
-uv run chipdiagram build integration/pic.yaml --view interrupt_network --format drawio,svg,png --out docs/diagrams/pic
+uv run chipdiagram build assets/examples/pic-subsystem/pic.yaml --view interrupt_network --format drawio,svg,png --out docs/diagrams/pic
 
 # 从 RTL 抽取 IP 结构
 uv run chipdiagram extract rtl/pic_top.sv --type ip --top pic_top --out build/diagram-model/pic.yaml
 
 # 校验但不生成
-uv run chipdiagram validate integration/soc.yaml --profile soc-signoff
+uv run chipdiagram validate assets/examples/pic-subsystem/pic.yaml --profile soc-signoff
 
 # 比较两个版本
 uv run chipdiagram diff old/manifest.yaml new/manifest.yaml --out reports/diagram-diff
@@ -96,22 +94,31 @@ docs/diagrams/<design-name>/
 
 ## 套件结构
 
-本 Skill 统一放在 `chipdraw-skill-suite/` 目录，主 `SKILL.md` 为统一入口（路由），4 个专业子 Skill 与公共资源作为子目录：
+本 Skill 统一放在 `chipdraw-skill-suite/` 目录，主 `SKILL.md` 为统一入口（路由），专业子 Skill 位于 `skills/`，公共资源位于 `assets/`，核心包位于 `chipdiagram/`：
 
 ```
 chipdraw-skill-suite/
 ├── SKILL.md                    # 统一入口与路由
 ├── diagram-routing.md          # 路由决策细节
 ├── openai.yaml                 # 入口 agent 定义
-├── diagram-common/             # 公共代码与资源包（不直接触发）
-├── draw-soc-architecture/      # SoC 系统级绘图
-├── draw-ip-architecture/       # IP 微架构绘图
-├── draw-rtl-behavior/          # FSM / WaveDrom / 事务序列
-└── draw-transistor-schematic/  # 晶体管原理图
+├── skills/                     # 4 个专业子 Skill
+│   ├── draw-soc-architecture/      # SoC 系统级绘图
+│   ├── draw-ip-architecture/       # IP 微架构绘图
+│   ├── draw-rtl-behavior/          # FSM / WaveDrom / 事务序列
+│   └── draw-transistor-schematic/  # 晶体管原理图
+├── chipdiagram/                # 核心 Python 包（引擎/适配器/校验器/CLI）
+├── assets/                     # 资产层（不直接触发）
+│   ├── schemas/                # 8 个 JSON Schema
+│   ├── libraries/              # 主题与符号库
+│   └── examples/               # Golden Case
+├── tests/                      # 单元/黄金/集成/视觉测试
+├── pyproject.toml              # 工程配置
+└── README.md
 ```
 
 每个专业子 Skill 目录包含其自身的 `SKILL.md`、`references/` 与 `agents/`。
 路由规则见下表，详细决策见 `diagram-routing.md`。
+**上下文控制**：只加载当前绘图类型相关的参考资料，不在一个 Skill 上下文加载所有层级的 references（建设方案 §3.1/§7）。
 
 ## Bundled resources
 
@@ -127,3 +134,4 @@ chipdraw-skill-suite/
 - draw.io CLI（导出 PNG/SVG/PDF）—— 缺失时降级为 `.drawio` XML + diagrams.net URL
 - Graphviz `dot`（FSM / 大型框图布局）—— 缺失时回退 Draw.io 网格
 - wavedrom-cli（数字时序 SVG/PNG）—— 缺失时输出 WaveJSON
+- Xschem + ngspice + PDK 符号库（Transistor Engineering Mode）—— 缺失时输出 SPICE 网表 + ERC 报告

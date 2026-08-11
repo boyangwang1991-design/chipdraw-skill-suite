@@ -14,7 +14,8 @@ from typing import Any
 
 from ..issues import Issue
 
-SCHEMAS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "schemas")
+# Schema 位于 assets/schemas（套件根下）
+SCHEMAS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "assets", "schemas")
 
 # 各 diagram.type 对应的专业 Schema
 TYPE_SCHEMA = {

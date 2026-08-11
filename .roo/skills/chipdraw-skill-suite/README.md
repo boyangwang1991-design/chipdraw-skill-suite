@@ -1,15 +1,11 @@
-# chipdraw-skill-suite
+# chipdraw-skill-suite（芯片研发智能绘图 Skill Suite）
 
-芯片研发智能绘图 Skill Suite 仓库。
+从 SoC 架构、IP 微架构、RTL 状态与数字时序，到晶体管级电路，基于统一入口、分层专业语义和确定性渲染后端，生成**可编辑、可验证、可追踪、可持续更新**的工程图形资产。
 
-本仓库是 [`芯片研发智能绘图Skill_Suite详细建设方案.md`](芯片研发智能绘图Skill_Suite详细建设方案.md) 的落地实现：从 SoC 架构、IP 微架构、RTL 状态与数字时序，到晶体管级电路，基于统一入口、分层专业语义和确定性渲染后端，生成**可编辑、可验证、可追踪、可持续更新**的工程图形资产。
+本目录是完整可安装的 Skill 套件（建设方案 §7）：
 
-## 套件位置
-
-完整 Skill 套件统一位于 **[`.roo/skills/chipdraw-skill-suite/`](.roo/skills/chipdraw-skill-suite/SKILL.md)**：
-
-```
-.roo/skills/chipdraw-skill-suite/
+```text
+chipdraw-skill-suite/
 ├── SKILL.md                    # 统一入口与路由（chip-diagram-router）
 ├── diagram-routing.md          # 路由决策细节
 ├── openai.yaml                 # 入口 agent 定义
@@ -20,20 +16,17 @@
 │   └── draw-transistor-schematic/  # 晶体管原理图（Illustration / Engineering）
 ├── chipdiagram/                # 核心 Python 包（引擎/适配器/校验器/CLI）
 ├── assets/                     # 资产层（不直接触发）
-│   ├── schemas/                # 8 个 JSON Schema
+│   ├── schemas/                # 8 个 JSON Schema（common/soc/ip/fsm/timing/sequence/circuit/view）
 │   ├── libraries/              # AIXSILICON 明暗主题 + 4 个符号库
 │   └── examples/               # 5 个 Golden Case
 ├── tests/                      # unit/golden/integration/visual 分层测试
-├── pyproject.toml / package.json
-└── .venv/                      # uv 虚拟环境（可选）
+├── pyproject.toml              # 工程配置（uv）
+└── package.json                # 工程配置（wavedrom-cli）
 ```
 
 ## 快速开始
 
 ```bash
-# 进入套件目录
-cd .roo/skills/chipdraw-skill-suite
-
 # 安装依赖（uv）
 uv pip install -e ".[test]"
 
@@ -71,7 +64,6 @@ uv run chipdiagram diff old/manifest.yaml new/manifest.yaml --out reports/diagra
 ## 测试
 
 ```bash
-cd .roo/skills/chipdraw-skill-suite
 uv run python -m pytest tests -q
 ```
 
@@ -79,6 +71,6 @@ uv run python -m pytest tests -q
 
 ## 上游复用边界
 
-- 通用绘图引擎**封装**自 [`reference/drawio-skill-main`](reference/drawio-skill-main/README.md)（MIT License），位于 [`chipdiagram/engines/shared/`](.roo/skills/chipdraw-skill-suite/chipdiagram/engines/shared/README.md)，保持只读快照便于上游同步；
+- 通用绘图引擎**封装**自 drawio-skill（MIT License），位于 [`chipdiagram/engines/shared/`](chipdiagram/engines/shared/README.md)，保持只读快照便于上游同步；
 - 芯片语义、Schema、适配器、校验器、渲染后端均为本项目独立实现；
 - 遵循建设方案 §6/§15 的"封装不硬改"与"固定基线、季度评估"策略。

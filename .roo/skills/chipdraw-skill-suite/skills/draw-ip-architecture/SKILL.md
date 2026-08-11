@@ -1,7 +1,7 @@
 ---
 name: draw-ip-architecture
 version: 1.0.0
-description: IP 微架构绘图 Skill。当用户请求绘制 IP 功能框图、数据通路/控制通路、流水线、FIFO/Queue、Arbiter/MUX、AXI/AHB/APB 接口展开、寄存器接口、CDC/RDC 结构、ECC/Parity/Lockstep 安全机制、RTL Module/Instance 层级、位宽转换时使用。支持从 SystemVerilog 抽取 Module/Port/Instance，以 RTL/SystemRDL 为事实源，输出 Draw.io + Graphviz 的 IP 视图，并执行数据通路位宽、流水线、FIFO、CDC/RDC、安全机制规则校验。
+description: IP 微架构绘图 Skill。当用户请求绘制 IP 功能框图、数据通路/控制通路、流水线、FIFO/Queue、Arbiter/MUX、AXI/AHB/APB 接口展开、寄存器接口、CDC/RDC 结构、ECC/Parity/Lockstep 安全机制、RTL Module/Instance 层级、位宽转换时使用；也适用于"画这个 IP 内部结构""这个模块数据流怎么走"等内部微架构描述。支持从 SystemVerilog 抽取 Module/Port/Instance，以 RTL/SystemRDL 为事实源，输出 Draw.io + Graphviz 的 IP 视图，并执行数据通路位宽、流水线、FIFO、CDC/RDC、安全机制规则校验。
 license: MIT
 homepage: https://github.com/AIXSILICON/chip-design-diagram-suite
 compatibility: 需要 Python 3.9+、PyYAML、jsonschema；Graphviz dot、draw.io CLI 为可选依赖。
