@@ -30,7 +30,8 @@ behavior:
     - {name: pwrite, wave: "0.1...0"}
     - {name: paddr, wave: "x.3...x", data: ["ADDR"]}
     - {name: pwdata, wave: "x.4...x", data: ["DATA"]}
-    - {name: pready, wave: "1.....1"}
+    # 连续同电平用 `.` 延续（"1.....1" 的尾随 1 会渲染出 glitch 跳变沿）
+    - {name: pready, wave: "1......"}
   markers:
     - {cycle: 2, text: setup}
     - {cycle: 3, text: access}

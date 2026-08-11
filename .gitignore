@@ -52,3 +52,6 @@ Thumbs.db
 *.log
 tmp/
 temp/
+
+# ---------- 本地产物（可重建，不入库；正式示例放 assets/examples） ----------
+outputs/

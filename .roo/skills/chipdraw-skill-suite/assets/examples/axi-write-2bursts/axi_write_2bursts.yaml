@@ -1,0 +1,85 @@
+# AXI4 写操作时序：两个 Burst（Burst1 = 2 beat，Burst2 = 3 beat）
+# 事实源：AMBA AXI4 协议规范（origin: spec）
+# 事务结构：每个 Burst = AW 地址握手 → W 通道逐 beat 握手（WLAST 标记末 beat）→ B 响应握手
+#   Burst1：AWLEN=1（2 beat），W0/W1，WLAST@cycle3，B 响应 OKAY@cycle5
+#   Burst2：AWLEN=2（3 beat），W2/W3/W4，WLAST@cycle11，B 响应 OKAY@cycle13
+#
+# Wave 书写约定（WaveDrom 语义）：
+#   - `.` 延续前一状态一个周期（不产生新 data）；
+#   - 连续同电平必须写作 "1." / "0."，禁止 "11"/"00"（同值相邻会渲染出 glitch 边沿）；
+#   - 首字符必须为显式电平（0/1/x/z），不得以 `.` 开头（否则渲染为未知态）。
+schema_version: "1.0"
+
+diagram:
+  id: axi-write-2bursts
+  type: rtl_behavior
+  subtype: timing
+  title: AXI4 写操作：两个 Burst（2 beat + 3 beat）
+  abstraction: rtl_behavior
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: specs/axi4_protocol.md, role: protocol}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+
+behavior:
+  clock:
+    name: aclk
+    period: 10ns
+  signals:
+    # 写地址通道（Write Address Channel）
+    # cycle1: Burst1 AW 握手；cycle8: Burst2 AW 握手
+    - ["AW 通道",
+        {name: awvalid, wave: "1.0....1.0...."},
+        {name: awready, wave: "010.....10....", node: ".a......b....."},
+        # 地址/长度在 AWVALID 置起后保持到握手完成（cycle7-8 稳定，握手采样沿 cycle8）
+        {name: awaddr,  wave: "2.x....3.x....", data: ["A0", "A1"]},
+        {name: awlen,   wave: "2.x....3.x....", data: ["1 (2 beat)", "2 (3 beat)"]}]
+    - {}
+    # 写数据通道（Write Data Channel）
+    # Burst1: cycle2=W0, cycle3=W1(WLAST)；Burst2: cycle9=W2, cycle10=W3, cycle11=W4(WLAST)
+    - ["W 通道",
+        {name: wvalid,  wave: "0.1.0....1..0."},
+        {name: wready,  wave: "0.1.0....1..0."},
+        {name: wdata,   wave: "x.23x....456x.", data: ["W0", "W1", "W2", "W3", "W4"]},
+        {name: wstrb,   wave: "x.23x....456x.", data: ["0xF", "0xF", "0xF", "0xF", "0xF"]},
+        {name: wlast,   wave: "0..10......10.", node: "...c.......d.."}]
+    - {}
+    # 写响应通道（Write Response Channel）
+    # cycle5: Burst1 B 握手；cycle13: Burst2 B 握手（bvalid 先于 bready，等 1 拍）
+    - ["B 通道",
+        {name: bvalid,  wave: "0....10.....1."},
+        {name: bready,  wave: "0....10......1"},
+        {name: bresp,   wave: "x....2x.....3.", data: ["OKAY", "OKAY"]}]
+  markers:
+    - {cycle: 1, text: AW 握手 · Burst1}
+    - {cycle: 3, text: Burst1 WLAST}
+    - {cycle: 5, text: B 响应 · Burst1}
+    - {cycle: 8, text: AW 握手 · Burst2}
+    - {cycle: 11, text: Burst2 WLAST}
+    - {cycle: 13, text: B 响应 · Burst2}
+  edges:
+    - "a~>c Burst1：2 beat（AWLEN=1）"
+    - "b~>d Burst2：3 beat（AWLEN=2）"
+  config:
+    hscale: 2
+  head:
+    text: "AXI4 写操作：两个 Burst（Burst1 = 2 beat，Burst2 = 3 beat）"
+    tick: 0
+  foot:
+    text: "事实源：AMBA AXI4 协议规范 · origin: spec"
+    tock: 13
+  origin: spec
+  protocol_rules: |
+    AXI4 写事务规则：①每个 Burst 独立经过 AW 通道握手（AWVALID 与 AWREADY 同拍为高），
+    AWLEN = beat 数 - 1（Burst1 AWLEN=1 → 2 beat；Burst2 AWLEN=2 → 3 beat）；
+    ②W 通道逐 beat 握手传输（WVALID 与 WREADY 同拍为高时传输一个 beat），
+    WLAST 仅在该 Burst 的最后一个 beat 拉高；
+    ③每个 Burst 对应一次 B 通道响应握手（BVALID 与 BREADY 同拍为高，BRESP=OKAY）后事务完成；
+    ④VALID 置起后在握手完成前不得撤销，数据/地址在握手前必须保持稳定（VALID/READY 握手协议）。

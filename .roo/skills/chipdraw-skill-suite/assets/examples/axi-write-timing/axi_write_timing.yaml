@@ -1,0 +1,78 @@
+# AXI4 写事务时序（Write Transaction Timing）— 演示 WaveDrom 高级能力
+# 覆盖：地址握手（AWVALID/AWREADY）、数据握手含等待态（WVALID/WREADY）、
+#       双 Beat 传输（WLAST）、写响应握手（BVALID/BREADY）。
+# 事实源：AXI4 协议规范（AMBA AXI4 Protocol Spec）。
+# 演示：自动时钟 lane、Master/Slave 分组、marker 标注、edge 箭头、head/foot 标题说明。
+#
+# wave 书写约定（重要，详见 skills/draw-rtl-behavior/references/timing.md）：
+#   - `.` 表示"延续前一状态一个周期"，连续同电平必须写作 "1." / "0."；
+#     写作 "11" / "00" 会在同值相邻处渲染出冗余跳变沿（glitch）；
+#   - 首字符没有"前一状态"可延续，必须为显式电平/未知字符（0/1/x/z 或数据字符），不得以 `.` 开头；
+#   - 连续数字（2-9/=）表示连续 data 拍，属合法写法，不要误判。
+schema_version: "1.0"
+
+diagram:
+  id: axi-write-transaction
+  type: rtl_behavior
+  subtype: timing
+  title: AXI4 Write Transaction (AW + W + B)
+  abstraction: rtl_behavior
+  language: zh-CN
+  status: draft
+
+provenance:
+  sources:
+    - {path: specs/axi4_protocol.md, role: protocol}
+  generator: chip-design-diagram-suite
+
+style:
+  theme: aixsilicon-light
+  page: "16:9"
+
+behavior:
+  clock:
+    name: aclk
+    period: 10ns
+  signals:
+    # 写地址通道（Write Address Channel）—— Master 组
+    # cycle0：AWVALID 与 AWREADY 同拍为高，完成地址握手
+    - ["Master",
+        {name: awvalid, wave: "1.0.......", node: "a........."},
+        {name: awready, wave: "010.......", node: ".b........"},
+        {name: awaddr,  wave: "2.x.......", data: ["ADDR"]}]
+    - {}
+    # 写数据通道（Write Data Channel）—— cycle3 插入 1 个等待态（WREADY 拉低）
+    - ["WriteData",
+        # 数据在 WVALID 为高期间（含等待态 cycle3）保持稳定，用 `.` 延续
+        {name: wvalid,  wave: "0.1..0...."},
+        {name: wready,  wave: "0.1010...."},
+        {name: wdata,   wave: "x.2.3.....", data: ["BEAT0", "BEAT1"]},
+        {name: wstrb,   wave: "x.2.3.....", data: ["0xF", "0xF"]},
+        {name: wlast,   wave: "0...10....", node: "....e....."}]
+    - {}
+    # 写响应通道（Write Response Channel）—— Slave 组
+    # cycle7：BVALID 与 BREADY 同拍为高，BRESP=OKAY，事务完成
+    - ["Slave",
+        # BRESP 在 BVALID 为高期间保持稳定（覆盖等待 BREADY 的周期）
+        {name: bvalid,  wave: "0.....1.0."},
+        {name: bready,  wave: "0......1.."},
+        {name: bresp,   wave: "x.....2...", data: ["OKAY"]}]
+  markers:
+    - {cycle: 0, text: 地址握手 AW}
+    - {cycle: 2, text: 数据 Beat0}
+    - {cycle: 4, text: Beat1 · WLAST}
+    - {cycle: 7, text: 写响应 B}
+  edges:
+    - "a~>e Burst 长度 2 beat"
+  head:
+    text: "AXI4 Write Transaction（AW + W + B 三阶段握手）"
+    tick: 0
+  foot:
+    text: "协议来源：AMBA AXI4 Protocol Spec"
+    tock: 9
+  origin: spec
+  protocol_rules: |
+    AXI4 写事务三阶段：①AW 通道握手（AWVALID 与 AWREADY 同拍为高）；
+    ②W 通道逐个 Beat 握手（WVALID 与 WREADY 同拍为高时传输，WLAST 标记最后 Beat）；
+    ③B 通道响应握手（BVALID 与 BREADY 同拍为高时事务完成，BRESP=OKAY）。
+    各通道 VALID 必须先于 READY 置起且握手前不得撤销（VALID/READY 握手协议）。
